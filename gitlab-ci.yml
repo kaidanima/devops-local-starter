@@ -1,4 +1,6 @@
-stages: [build]
+stages:
+  - build
+  - deploy
 
 variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/api
@@ -6,7 +8,8 @@ variables:
 build:
   stage: build
   image: docker:24.0.5
-  tags: [local]          # ← با تگ Runner لوکال جور باشد
+  services:
+    - docker:24.0.5-dind
   script:
     - echo "Login to GitLab Registry..."
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
@@ -14,3 +17,15 @@ build:
     - docker push "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
     - docker tag "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" "$IMAGE_NAME:latest"
     - docker push "$IMAGE_NAME:latest"
+
+deploy:
+  stage: deploy
+  image: docker:24.0.5
+  tags: [local]   # این مهمه → به Runner لوکال ما وصل میشه
+  script:
+    - echo "Login to GitLab Registry..."
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker compose -f docker-compose.yml pull api
+    - docker compose -f docker-compose.yml up -d api
+  only:
+    - master
