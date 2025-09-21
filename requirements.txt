@@ -1,0 +1,18 @@
+# --- Web framework ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+
+# --- Testing ---
+pytest>=8.3.0
+
+# --- Code quality ---
+black>=24.8.0
+isort>=5.13.2
+flake8>=7.1.0
+bandit>=1.7.9
+httpx
+alembic
+psycopg2-binary
+sqlalchemy
+email-validator>=2.0.0

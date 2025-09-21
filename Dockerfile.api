@@ -1,0 +1,25 @@
+FROM python:3.12-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc build-essential curl && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# وابستگی‌ها
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# کپی کل سورس + فایل‌های Alembic
+COPY src /app/src
+COPY alembic.ini /app/alembic.ini
+COPY migrations /app/migrations
+COPY docker/entrypoint.sh /app/entrypoint.sh
+
+ENV PYTHONPATH=/app
+EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]

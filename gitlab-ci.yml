@@ -1,0 +1,62 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  # اسم ایمیج برای GitLab Container Registry
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/api
+
+before_script:
+  - echo "Running job on $CI_PROJECT_PATH"
+
+lint:
+  stage: lint
+  image: python:3.12-slim
+  script:
+    - pip install --no-cache-dir flake8 black isort bandit
+    - flake8 src
+    - black --check src tests
+    - isort --check-only src tests
+    - bandit -r src
+
+test:
+  stage: test
+  image: python:3.12-slim
+  services:
+    - name: postgres:16
+      alias: db
+  variables:
+    POSTGRES_DB: appdb
+    POSTGRES_USER: appuser
+    POSTGRES_PASSWORD: secretpassword
+    POSTGRES_HOST: db
+    POSTGRES_PORT: 5432
+  script:
+    - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest psycopg2-binary
+    - pytest -q
+
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - echo "Logging in to GitLab Registry..."
+    - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA -f Dockerfile.api .
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - docker tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:latest
+
+deploy:
+  stage: deploy
+  image: alpine:3.19
+  script:
+    - echo ">>> (Demo) Deploy stage running..."
+    - echo "در عمل می‌تونی اینجا اسکریپت ssh یا kubectl بنویسی."
+  only:
+    - main

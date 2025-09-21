@@ -1,0 +1,55 @@
+version: "3.9"
+
+networks:
+  devnet:
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --api.insecure=true               # فقط برای توسعه! داشبورد بدون auth
+      - --providers.docker=true           # خواندن لیبل‌ها از داکر
+      - --entrypoints.web.address=:80     # ورودی «وب»
+    ports:
+      - "8080:80"                         # وب عمومی → به entrypoint web
+      - "8081:8080"                       # داشبورد Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - devnet
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    env_file:
+      - .env
+    volumes:
+      - ./docker:/app/docker:ro
+    entrypoint: ["/app/docker/entrypoint.sh"]
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: appdb
+      APP_ENV: dev
+      APP_PORT: "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=devnet"
+      - "traefik.http.routers.api.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.service=api"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    depends_on:
+      - traefik
+      - db
+    networks:
+      - devnet
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health | grep -q '\"status\":\"ok\"'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
