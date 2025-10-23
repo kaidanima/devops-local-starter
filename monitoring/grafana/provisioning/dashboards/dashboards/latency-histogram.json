@@ -1,0 +1,37 @@
+{
+  "id": null,
+  "uid": "latency-histogram",
+  "title": "API Latency Histogram",
+  "tags": ["api", "latency"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {"from": "now-6h", "to": "now"},
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Latency p95 (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p95"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p99 (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {"expr": "histogram_quantile(0.99, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p99"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Duration Mean (approx)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+      "targets": [
+        {"expr": "sum(rate(request_duration_seconds_sum{job=\"api\"}[5m])) / sum(rate(request_duration_seconds_count{job=\"api\"}[5m]))", "legendFormat": "mean"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "id": null,
+  "uid": "api-overview",
+  "title": "API Overview",
+  "tags": ["api", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "panels": [
+    {
+      "type": "stat",
+      "title": "API Up",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "avg(up{job=\"api\"})", "legendFormat": "up"}
+      ],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal"}
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Rate (req/s)",
+      "gridPos": {"h": 8, "w": 12, "x": 4, "y": 0},
+      "targets": [
+        {"expr": "sum by (method) (rate(http_requests_total{job=\"api\"}[5m]))", "legendFormat": "{{method}}"}
+      ],
+      "options": {"legend": {"displayMode": "table", "placement": "right"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (5xx req/s)",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 4},
+      "targets": [
+        {"expr": "sum(rate(http_requests_total{job=\"api\", code=~\"5..\"}[5m]))", "legendFormat": "5xx"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p50/p90/p95/p99 (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p50"},
+        {"expr": "histogram_quantile(0.90, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p90"},
+        {"expr": "histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p95"},
+        {"expr": "histogram_quantile(0.99, sum(rate(request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))", "legendFormat": "p99"}
+      ],
+      "options": {"legend": {"displayMode": "table", "placement": "right"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by Status Code (req/s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {"expr": "sum by (code) (rate(http_requests_total{job=\"api\"}[5m]))", "legendFormat": "{{code}}"}
+      ],
+      "options": {"legend": {"displayMode": "list", "placement": "right"}}
+    }
+  ],
+  "templating": {"list": []}
+}

@@ -1,0 +1,14 @@
+mirrors:
+  "docker.io":
+    endpoint:
+      - https://host.k3d.internal:5001
+  "quay.io":
+    endpoint:
+      - https://host.k3d.internal:5002
+configs:
+  "host.k3d.internal:5001":
+    tls:
+      ca_file: "/etc/ssl/certs/host-k3d.crt"
+  "host.k3d.internal:5002":
+    tls:
+      ca_file: "/etc/ssl/certs/host-k3d.crt"

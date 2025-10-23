@@ -16,3 +16,5 @@ alembic
 psycopg2-binary
 sqlalchemy
 email-validator>=2.0.0
+prometheus-fastapi-instrumentator>=6.1.0
+
