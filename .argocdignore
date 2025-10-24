@@ -1,0 +1,2 @@
+# Exclude accidental live dumps from being applied by Argo CD
+argocd.json
