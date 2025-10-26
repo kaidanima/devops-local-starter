@@ -1,9 +1,13 @@
 import os
 
 from fastapi import FastAPI
-from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY,
-                               CollectorRegistry, generate_latest,
-                               multiprocess)
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    REGISTRY,
+    CollectorRegistry,
+    generate_latest,
+    multiprocess,
+)
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 from starlette.responses import Response

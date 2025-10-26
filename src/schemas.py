@@ -2,10 +2,11 @@
 
 Note: This file uses Pydantic v2 style configuration.
 """
+
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # ---------- Base ----------
@@ -18,11 +19,13 @@ class UserBase(BaseModel):
 # ---------- Create / Update payloads ----------
 class UserCreate(UserBase):
     """Payload ایجاد کاربر (client → server)"""
+
     pass
 
 
 class UserUpdate(BaseModel):
     """Payload آپدیت کاربر (Patch/Put)"""
+
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     age: Optional[int] = Field(None, ge=0, le=150)
 
@@ -30,6 +33,7 @@ class UserUpdate(BaseModel):
 # ---------- Read models (server → client) ----------
 class UserRead(UserBase):
     """خروجی API برای خواندن/لیست‌کردن کاربر"""
+
     id: int
     created_at: datetime
 

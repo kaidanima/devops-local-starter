@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from .settings import database_url
 
 # Global Engine based on environment-driven settings
@@ -10,6 +11,7 @@ SessionLocal = sessionmaker(bind=ENGINE, autocommit=False, autoflush=False, futu
 
 # Declarative Base for models
 Base = declarative_base()
+
 
 # Optional: FastAPI dependency helper
 def get_db():

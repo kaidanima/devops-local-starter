@@ -2,11 +2,11 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-from src.db import get_db
 from src import models
+from src.db import get_db
 from src.schemas import UserCreate, UserRead
 
 router = APIRouter(prefix="/users", tags=["users"])
