@@ -66,12 +66,25 @@ jobs:
           git commit -m "Update api image to ghcr.io/${{ github.repository }}/api:${{ github.sha }}" || echo "No changes to commit"
           git pull --rebase origin "${{ github.ref_name }}" || true
           git push origin "${{ github.ref_name }}" || true
-
       - name: Trigger ArgoCD Sync
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && env.ARGOCD_SERVER != '' && env.ARGOCD_AUTH_TOKEN != ''
         env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+          ARGOCD_APP: ${{ vars.ARGOCD_APP }}
         run: |
-          curl -k -X POST "${ARGOCD_SERVER}/api/v1/applications/devops-local-starter/sync" \
-            -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}"
+          set -euo pipefail
+          APP_NAME="${ARGOCD_APP:-devops-local-starter}"
+          URL="${ARGOCD_SERVER%/}/api/v1/applications/${APP_NAME}/sync"
+          echo "Triggering ArgoCD sync for app: ${APP_NAME} at ${URL}"
+          for attempt in 1 2 3; do
+            if curl -k -sS -f -X POST "$URL" \
+              -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{"dryRun":false,"prune":false,"strategy":{"hook":{"force":true}},"revision":""}'; then
+              echo "ArgoCD sync triggered successfully"
+              break
+            fi
+            echo "Sync attempt $attempt failed; retrying in 5s..."
+            sleep 5
+          done
